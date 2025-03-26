@@ -46,3 +46,7 @@ combinators library such as the one from contrib: The parser presented
 here parses an example WebIDL string of about 2'000 lines of code in
 about 8 ms on my machine, while the parser currently in use in the
 idris-webidl project takes over 60 ms for the same string.
+
+# parser-xml
+
+The parser-xml sub-project provides a lexer and parser for the [Extensible Markup Language (XML) 1.0 (Fifth Edition)](https://www.w3.org/TR/xml/).
