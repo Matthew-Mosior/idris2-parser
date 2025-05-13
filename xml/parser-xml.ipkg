@@ -1,0 +1,10 @@
+package parser-xml
+version   = 0.1.0
+authors   = "matthew-mosior"
+sourcedir = "src"
+depends   = parser
+
+brief     = "Total and efficient parser and lexer for the extensible markup language."
+
+modules   = XML.Parser
+          , XML.Types
