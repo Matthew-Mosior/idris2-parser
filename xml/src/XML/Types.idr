@@ -193,7 +193,7 @@ Show Misc where
 public export
 data Element : Type where
   EmptyElem : QName -> List Attribute -> Element
-  Elem      : QName -> List Attribute -> List (Maybe CharData, Maybe (Either Misc Element)) -> Element
+  Elem      : QName -> List Attribute -> List (Either CharData (Either Misc Element)) -> Element
 
 public export
 (.name) :  Element
@@ -209,7 +209,7 @@ public export
 
 public export
 (.content) :  Element
-           -> List (Maybe CharData, Maybe (Either Misc Element))
+           -> List (Either CharData (Either Misc Element))
 (EmptyElem _ _).content    = Nil 
 (Elem _ _ content).content = content
 
@@ -231,29 +231,25 @@ textContent (EmptyElem _     _)              = ""
 textContent (Elem      _     _    Nil)       = ""
 textContent (Elem      qname attr (x :: xs)) =
   case x of
-    (Just chardata, Nothing)        =>
+    (Left chardata)       =>
       (showNl chardata) ++ (textContent (Elem qname attr xs))
-    (Nothing, Just (Right element)) =>
+    (Right (Right element)) =>
       (textContent element) ++ (textContent (Elem qname attr xs))
-    (Nothing, Just (Left _))        =>
+    (Right (Left  _))       =>
       textContent (Elem qname attr xs)
-    _                               =>
-      ""
 
 public export
-textContent' :  List (Maybe CharData, Maybe (Either Misc Element))
+textContent' :  List (Either CharData (Either Misc Element))
              -> String
-textContent' Nil       = ""
-textContent' (x :: xs) =
+textContent' Nil     = ""
+textContent' (x::xs) =
   case x of
-    (Just chardata, Nothing)        =>
+    (Left chardata)         =>
       (showNl chardata) ++ (textContent' xs)
-    (Nothing, Just (Right element)) =>
+    (Right (Right element)) =>
       (textContent element) ++ (textContent' xs)
-    (Nothing, Just (Left misc))     =>
+    (Right (Left misc))     =>
       (show misc) ++ (textContent' xs)
-    _                               =>
-      ""
 
 public export
 find :  (Element -> Bool)
@@ -261,20 +257,20 @@ find :  (Element -> Bool)
      -> Maybe Element
 find f elem = find f (extractContent elem.content)
   where
-    extractContent :  List (Maybe CharData, Maybe (Either Misc Element))
+    extractContent :  List (Either CharData (Either Misc Element))
                    -> List Element
-    extractContent Nil            = Nil
+    extractContent Nil                 = Nil
     extractContent (content::contents) =
       case content of
-        (_, Just (Right content')) =>
+        (Right (Right content')) =>
           content' :: extractContent contents
-        _                          =>
+        _                        =>
           extractContent contents
 
 namespace Element
 
   public export
-  mapContent :  (List (Maybe CharData, Maybe (Either Misc Element)) -> List (Maybe CharData, Maybe (Either Misc Element)))
+  mapContent :  (List (Either CharData (Either Misc Element)) -> List (Either CharData (Either Misc Element)))
              -> Element
              -> Element
   mapContent f (EmptyElem name attrs)    = EmptyElem name attrs
@@ -282,7 +278,7 @@ namespace Element
 
 public export
 mapContentM :  Monad m
-            => (List (Maybe CharData, Maybe (Either Misc Element)) -> m (List (Maybe CharData, Maybe (Either Misc Element))))
+            => (List (Either CharData (Either Misc Element)) -> m (List (Either CharData (Either Misc Element))))
             -> Element
             -> m Element
 mapContentM f (EmptyElem name attrs)    = pure $ EmptyElem name attrs
