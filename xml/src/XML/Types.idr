@@ -231,7 +231,7 @@ textContent (EmptyElem _     _)              = ""
 textContent (Elem      _     _    Nil)       = ""
 textContent (Elem      qname attr (x :: xs)) =
   case x of
-    (Left chardata)       =>
+    (Left chardata)         =>
       (showNl chardata) ++ (textContent (Elem qname attr xs))
     (Right (Right element)) =>
       (textContent element) ++ (textContent (Elem qname attr xs))
